@@ -1,6 +1,6 @@
 plugins {
     id 'groovy'
-    id 'maven'
+    id 'maven-publish'
     id 'java-gradle-plugin'
 }
 
@@ -40,6 +40,22 @@ gradlePlugin {
         gitRepo {
             id = 'git-repo'
             implementationClass = 'com.layer.gradle.gitrepo.GitRepoPlugin'
+        }
+    }
+}
+
+publishing {
+    afterEvaluate {
+        publications {
+            pluginMaven {
+                artifactId 'git-repo-plugin'
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = 'localPluginRepository'
+            url = 'local-plugin-repository'
         }
     }
 }

@@ -11,3 +11,5 @@ classes
 .project
 .classpath
 gradle.properties
+local.properties
+local-plugin-repository/
