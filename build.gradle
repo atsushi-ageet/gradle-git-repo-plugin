@@ -1,5 +1,7 @@
-apply plugin: 'groovy'
-apply plugin: 'maven'
+plugins {
+    id 'groovy'
+    id 'maven'
+}
 
 sourceCompatibility = 1.7
 group = 'com.layer'
@@ -11,18 +13,18 @@ repositories {
 }
 
 dependencies {
-    compile gradleApi()
-    compile localGroovy()
-    compile 'org.ajoberstar:grgit:2.0.0'
+    implementation gradleApi()
+    implementation localGroovy()
+    implementation 'org.ajoberstar:grgit:2.0.0'
 }
 
 task javadocJar(type: Jar) {
-    classifier = 'javadoc'
+    archiveClassifier.set('javadoc')
     from javadoc
 }
 
 task sourcesJar(type: Jar) {
-    classifier = 'sources'
+    archiveClassifier.set('sources')
     from sourceSets.main.allSource
 }
 
