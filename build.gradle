@@ -3,19 +3,21 @@ plugins {
     id 'maven'
 }
 
-sourceCompatibility = 1.7
 group = 'com.layer'
 apply from: "$rootDir/version.gradle"
 
 repositories {
     mavenCentral()
-    jcenter()
+    maven {
+        name = 'ajoberstar-backup'
+        url = 'https://ajoberstar.github.io/bintray-backup/'
+    }
 }
 
 dependencies {
     implementation gradleApi()
     implementation localGroovy()
-    implementation 'org.ajoberstar:grgit:2.0.0'
+    implementation 'org.ajoberstar.grgit:grgit-core:4.1.0'
 }
 
 task javadocJar(type: Jar) {
