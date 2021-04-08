@@ -1,6 +1,7 @@
 plugins {
     id 'groovy'
     id 'maven'
+    id 'java-gradle-plugin'
 }
 
 group = 'com.layer'
@@ -32,4 +33,13 @@ task sourcesJar(type: Jar) {
 
 artifacts {
     archives javadocJar, sourcesJar
+}
+
+gradlePlugin {
+    plugins {
+        gitRepo {
+            id = 'git-repo'
+            implementationClass = 'com.layer.gradle.gitrepo.GitRepoPlugin'
+        }
+    }
 }
