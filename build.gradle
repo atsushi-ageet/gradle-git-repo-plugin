@@ -9,16 +9,12 @@ apply from: "$rootDir/version.gradle"
 
 repositories {
     mavenCentral()
-    maven {
-        name = 'ajoberstar-backup'
-        url = 'https://ajoberstar.github.io/bintray-backup/'
-    }
 }
 
 dependencies {
     implementation gradleApi()
     implementation localGroovy()
-    implementation 'org.ajoberstar.grgit:grgit-core:4.1.0'
+    implementation 'org.ajoberstar.grgit:grgit-core:4.1.1'
 }
 
 task javadocJar(type: Jar) {
