@@ -6,15 +6,19 @@ import org.gradle.api.Task
 import org.gradle.api.UnknownTaskException
 
 import org.ajoberstar.grgit.*
+import org.gradle.api.artifacts.repositories.ArtifactRepository
+import org.gradle.api.plugins.ExtensionAware
 
 /**
  * Use a (possibly private) github repo as a maven dependency.
  * Created by drapp on 7/16/14.
  */
 class GitRepoPlugin  implements Plugin<Project> {
+    public static final String DEFAULT_BRANCH = "master"
+    public static final String DEFAULT_TYPE = "releases"
 
-    private def provider(Project project, String host) {
-        { String org, String repo, String branch = "master", String type = "releases", def closure = null ->
+    private Closure<ArtifactRepository> provider(Project project, String host) {
+        { String org, String repo, String branch = DEFAULT_BRANCH, String type = DEFAULT_TYPE ->
             String gitUrl = providerCloneUrl(host, org, repo)
             def orgDir = repositoryDir(project, org)
             addLocalRepo(project, ensureLocalRepo(project, orgDir, repo, gitUrl, branch), type)
@@ -25,15 +29,17 @@ class GitRepoPlugin  implements Plugin<Project> {
 
         project.extensions.create("gitPublishConfig", GitPublishConfig)
 
+        ((ExtensionAware) project.repositories).extensions.create("gitRepo", GitRepoExtension, project)
+
         // allow declaring special repositories
-        if (!project.repositories.metaClass.respondsTo(project.repositories, 'github', String, String, String, String, Object)) {
+        if (!project.repositories.metaClass.respondsTo(project.repositories, 'github', String, String, String, String)) {
             project.repositories.metaClass.github = provider(project, 'github.com')
         }
-        if (!project.repositories.metaClass.respondsTo(project.repositories, 'bitbucket', String, String, String, String, Object)) {
+        if (!project.repositories.metaClass.respondsTo(project.repositories, 'bitbucket', String, String, String, String)) {
             project.repositories.metaClass.bitbucket = provider(project, 'bitbucket.org')
         }
-        if (!project.repositories.metaClass.respondsTo(project.repositories, 'git', String, String, String, String, Object)) {
-            project.repositories.metaClass.git = { String gitUrl, String name, String branch = "master", String type = "releases", def closure = null ->
+        if (!project.repositories.metaClass.respondsTo(project.repositories, 'git', String, String, String, String)) {
+            project.repositories.metaClass.git = { String gitUrl, String name, String branch = DEFAULT_BRANCH, String type = DEFAULT_TYPE ->
                 def orgDir = repositoryDir(project, name)
                 addLocalRepo(project, ensureLocalRepo(project, orgDir, name, gitUrl, branch), type)
             }
@@ -119,7 +125,7 @@ class GitRepoPlugin  implements Plugin<Project> {
         return repoDir
     }
 
-    private static void addLocalRepo(Project project, File repoDir, String type) {
+    private static ArtifactRepository addLocalRepo(Project project, File repoDir, String type) {
         project.repositories.maven {
             url repoDir.getAbsolutePath() + "/" + type
         }
@@ -133,7 +139,7 @@ class GitPublishConfig {
     def String repo = ""
     def String provider = "github.com" //github.com, gitlab or others
     def String gitUrl = "" //used to replace git@${provider}:${org}/${repo}.git
-    def String branch = "master"
+    def String branch = GitRepoPlugin.DEFAULT_BRANCH
     def String home = "${System.properties['user.home']}/.gitRepos"
     def String publishAndPushTask = "publishToGithub"
     def String publishTask = "publish" //default publish tasks added by maven-publish plugin

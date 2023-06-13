@@ -2,6 +2,7 @@ plugins {
     id 'groovy'
     id 'maven-publish'
     id 'java-gradle-plugin'
+    id 'org.jetbrains.kotlin.jvm' version '1.8.21'
 }
 
 group = 'com.layer'
@@ -29,6 +30,14 @@ task sourcesJar(type: Jar) {
 
 artifacts {
     archives javadocJar, sourcesJar
+}
+
+tasks.named('compileGroovy') {
+    classpath = sourceSets.main.compileClasspath
+}
+
+tasks.named('compileKotlin') {
+    classpath += files(sourceSets.main.groovy.classesDirectory)
 }
 
 gradlePlugin {
