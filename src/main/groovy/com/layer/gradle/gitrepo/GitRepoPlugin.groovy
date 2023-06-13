@@ -1,5 +1,8 @@
 package com.layer.gradle.gitrepo
 
+import groovy.transform.EqualsAndHashCode
+import groovy.transform.ToString
+import groovy.transform.TupleConstructor
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -25,10 +28,25 @@ class GitRepoPlugin  implements Plugin<Project> {
         }
     }
 
+    @TupleConstructor @ToString @EqualsAndHashCode
+    static class LocalRepo {
+        File directory
+        String name
+        String gitUrl
+        String branch
+    }
+
+    private static boolean isCleanTaskConfigured = false
+    private static Set<LocalRepo> localReposCache = new HashSet<>()
+
     void apply(Project project) {
-
+        if (!isCleanTaskConfigured) {
+            project.rootProject.tasks.maybeCreate("clean").doLast {
+                localReposCache.clear()
+            }
+            isCleanTaskConfigured = true
+        }
         project.extensions.create("gitPublishConfig", GitPublishConfig)
-
         ((ExtensionAware) project.repositories).extensions.create("gitRepo", GitRepoExtension, project)
 
         // allow declaring special repositories
@@ -114,6 +132,8 @@ class GitRepoPlugin  implements Plugin<Project> {
     private static File ensureLocalRepo(Project project, File directory, String name, String gitUrl, String branch) {
         def repoDir = new File(directory, name)
         if (isOffline(project)) return repoDir
+        def localRepo = new LocalRepo(directory, name, gitUrl, branch)
+        if (localReposCache.contains(localRepo)) return repoDir
         def gitRepo
         if(repoDir.directory) {
             gitRepo= Grgit.open(dir: repoDir)
@@ -122,6 +142,7 @@ class GitRepoPlugin  implements Plugin<Project> {
         }
         gitRepo.checkout(branch: branch)
         gitRepo.pull()
+        localReposCache.add(localRepo)
         return repoDir
     }
 
