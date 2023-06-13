@@ -101,20 +101,22 @@ class GitRepoPlugin  implements Plugin<Project> {
         }
     }
 
+    private static boolean isOffline(Project project) {
+        return project.gradle.startParameter.isOffline()
+    }
+
     private static File ensureLocalRepo(Project project, File directory, String name, String gitUrl, String branch) {
         def repoDir = new File(directory, name)
-        def gitRepo;
-        if(repoDir.directory || project.hasProperty("offline")) {
+        if (isOffline(project)) return repoDir
+        def gitRepo
+        if(repoDir.directory) {
             gitRepo= Grgit.open(dir: repoDir)
         } else {
             gitRepo= Grgit.clone(dir: repoDir, uri: gitUrl)
         }
-        if(!project.hasProperty("offline")) {
-            gitRepo.checkout(branch: branch)
-            gitRepo.pull()
-        }
-
-        return repoDir;
+        gitRepo.checkout(branch: branch)
+        gitRepo.pull()
+        return repoDir
     }
 
     private static void addLocalRepo(Project project, File repoDir, String type) {
