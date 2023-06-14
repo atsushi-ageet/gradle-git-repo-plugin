@@ -36,15 +36,19 @@ class GitRepoPlugin  implements Plugin<Project> {
         String branch
     }
 
-    private static boolean isCleanTaskConfigured = false
     private static Set<LocalRepo> localReposCache = new HashSet<>()
 
     void apply(Project project) {
-        if (!isCleanTaskConfigured) {
-            project.rootProject.tasks.maybeCreate("clean").doLast {
-                localReposCache.clear()
+        Task cleanLocalRepoCache = project.rootProject.tasks.findByName("cleanLocalRepoCache")
+        if (cleanLocalRepoCache == null) {
+            cleanLocalRepoCache = project.rootProject.tasks.create("cleanLocalRepoCache") {
+                doFirst {
+                    localReposCache.clear()
+                }
             }
-            isCleanTaskConfigured = true
+            project.rootProject.afterEvaluate {
+                project.rootProject.tasks.maybeCreate("clean").dependsOn(cleanLocalRepoCache)
+            }
         }
         project.extensions.create("gitPublishConfig", GitPublishConfig)
         ((ExtensionAware) project.repositories).extensions.create("gitRepo", GitRepoExtension, project)
