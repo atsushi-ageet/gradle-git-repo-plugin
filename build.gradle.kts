@@ -17,7 +17,9 @@ repositories {
 
 dependencies {
     implementation(localGroovy())
-    implementation("org.ajoberstar.grgit:grgit-core:5.3.3")
+    implementation("org.eclipse.jgit:org.eclipse.jgit:7.6.0.202603022253-r")
+    implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:7.6.0.202603022253-r")
+    implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.apache.agent:7.6.0.202603022253-r")
 }
 
 tasks.named<GroovyCompile>("compileGroovy") {
