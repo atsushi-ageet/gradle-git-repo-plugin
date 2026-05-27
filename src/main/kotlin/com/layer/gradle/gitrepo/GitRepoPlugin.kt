@@ -1,6 +1,7 @@
 package com.layer.gradle.gitrepo
 
 import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.transport.RefSpec
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -47,7 +48,9 @@ class GitRepoPlugin : Plugin<Project> {
                     Git.open(gitDir).use { git ->
                         git.add().addFilepattern(".").call()
                         git.commit().setMessage("published artifacts for ${project.group} ${project.version}").call()
-                        git.push().call()
+                        git.push()
+                            .setRefSpecs(RefSpec("HEAD:refs/heads/${config.branch}"))
+                            .call()
                     }
                 }
                 publishAndPush.dependsOn(publishTask)

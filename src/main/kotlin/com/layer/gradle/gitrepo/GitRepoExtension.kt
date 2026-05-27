@@ -1,6 +1,5 @@
 package com.layer.gradle.gitrepo
 
-import org.eclipse.jgit.api.CreateBranchCommand
 import org.eclipse.jgit.api.Git
 import org.gradle.api.Action
 import org.gradle.api.Project
@@ -37,34 +36,26 @@ class GitRepoExtension(private val project: Project) {
 
         if (repoDir.isDirectory) {
             Git.open(repoDir).use { git ->
-                checkoutBranch(git, branch)
-                git.pull().call()
+                git.fetch().call()
+                checkoutRemoteCommit(git, branch)
             }
         } else {
             Git.cloneRepository()
                 .setDirectory(repoDir)
                 .setURI(gitUrl)
-                .setBranch(branch)
+                .setNoCheckout(true)
                 .call()
-                .use { }
+                .use { git -> checkoutRemoteCommit(git, branch) }
         }
 
         GitRepoPlugin.localReposCache.add(localRepo)
         return repoDir
     }
 
-    private fun checkoutBranch(git: Git, branch: String) {
-        val localBranchExists = git.branchList().call().any { it.name == "refs/heads/$branch" }
-        if (localBranchExists) {
-            git.checkout().setName(branch).call()
-        } else {
-            git.checkout()
-                .setCreateBranch(true)
-                .setName(branch)
-                .setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.TRACK)
-                .setStartPoint("origin/$branch")
-                .call()
-        }
+    private fun checkoutRemoteCommit(git: Git, branch: String) {
+        val commitId = git.repository.resolve("refs/remotes/origin/$branch")
+            ?: error("Remote branch origin/$branch not found")
+        git.checkout().setName(commitId.name).call()
     }
 
     private fun addLocalRepo(repoDir: File, type: String): ArtifactRepository {
