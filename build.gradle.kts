@@ -1,4 +1,5 @@
 import org.gradle.api.publish.maven.MavenPublication
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -18,13 +19,22 @@ repositories {
 
 dependencies {
     implementation(localGroovy())
-    implementation("org.eclipse.jgit:org.eclipse.jgit:7.6.0.202603022253-r")
-    implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:7.6.0.202603022253-r")
-    implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.apache.agent:7.6.0.202603022253-r")
+    implementation("org.ajoberstar.grgit:grgit-core:5.3.3")
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
 tasks.named<GroovyCompile>("compileGroovy") {
     classpath = sourceSets.main.get().compileClasspath
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_11)
+    }
 }
 
 tasks.named<KotlinCompile>("compileKotlin") {

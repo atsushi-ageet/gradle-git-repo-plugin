@@ -1,7 +1,5 @@
 package com.layer.gradle.gitrepo
 
-import org.eclipse.jgit.api.Git
-import org.eclipse.jgit.api.ResetCommand
 import org.gradle.api.Action
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.artifacts.repositories.ArtifactRepository
@@ -32,38 +30,9 @@ class GitRepoExtension internal constructor(
         val localRepo = LocalRepo(directory, name, gitUrl, branch)
         if (GitRepoPlugin.localReposCache.contains(localRepo)) return repoDir
 
-        if (repoDir.isDirectory) {
-            Git.open(repoDir).use { git ->
-                git.fetch().call()
-                checkoutRemoteCommit(git, branch)
-            }
-        } else {
-            Git.cloneRepository()
-                .setDirectory(repoDir)
-                .setURI(gitUrl)
-                .setNoCheckout(true)
-                .call()
-                .use { git -> checkoutRemoteCommit(git, branch) }
-        }
-
+        GrgitHelper.ensureLocalRepo(directory, name, gitUrl, branch, createLocalBranch)
         GitRepoPlugin.localReposCache.add(localRepo)
         return repoDir
-    }
-
-    private fun checkoutRemoteCommit(git: Git, branch: String) {
-        val remoteCommit = git.repository.resolve("refs/remotes/origin/$branch")
-            ?: error("Remote branch origin/$branch not found")
-        if (createLocalBranch) {
-            val localBranchExists = git.repository.findRef("refs/heads/$branch") != null
-            if (localBranchExists) {
-                git.checkout().setName(branch).call()
-                git.reset().setMode(ResetCommand.ResetType.HARD).setRef(remoteCommit.name).call()
-            } else {
-                git.checkout().setCreateBranch(true).setName(branch).setStartPoint(remoteCommit.name).call()
-            }
-        } else {
-            git.checkout().setName(remoteCommit.name).call()
-        }
     }
 
     private fun addLocalRepo(repoDir: File, type: String, name: String): ArtifactRepository {
