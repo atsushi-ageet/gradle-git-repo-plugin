@@ -6,7 +6,6 @@ open class GitPublishConfig {
     var provider: String = "github.com"
     var gitUrl: String = ""
     var branch: String = GitRepoPlugin.DEFAULT_BRANCH
-    var home: String = "${System.getProperty("user.home")}/.gitRepos"
     var publishAndPushTask: String = "publishToGithub"
     var publishTask: String = "publish"
 }

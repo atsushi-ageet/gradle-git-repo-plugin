@@ -40,6 +40,10 @@ gradlePlugin {
             id = "git-repo-settings"
             implementationClass = "com.layer.gradle.gitrepo.GitRepoSettingsPlugin"
         }
+        create("gitRepoPublish") {
+            id = "git-repo-publish"
+            implementationClass = "com.layer.gradle.gitrepo.GitRepoPublishPlugin"
+        }
     }
 }
 

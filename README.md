@@ -118,7 +118,7 @@ The following gradle properties affect cloning dependencies
 
 For publishing, the following configuration is supported, to allow non-github repos and other settings
 
-    gitRepoConfig {
+    gitPublishConfig {
 		// mandatory
 
         org = "myorg"
@@ -129,10 +129,8 @@ For publishing, the following configuration is supported, to allow non-github re
 	    gitUrl = "" //used to replace git@${provider}:${org}/${repo}.git
 		provider = "github.com" // or "gitlab.com", or any other github like
 		branch = "master"
-        home = "${System.properties['user.home']}/.gitRepos" base directory for cloning
         publishAndPushTask = "publishToGithub" // the name for the full publish action
         publishTask = "publish" //default publish tasks added by maven-publish plugin
-        offline = false // if true, no git clones will be performed, the repo will be assumed to be there
 	}
 
 ## Futures
