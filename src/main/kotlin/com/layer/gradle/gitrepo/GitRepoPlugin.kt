@@ -21,14 +21,14 @@ class GitRepoPlugin : Plugin<Project> {
         }
 
         project.extensions.create("gitPublishConfig", GitPublishConfig::class.java)
-        (project.repositories as ExtensionAware).extensions.create("gitRepo", GitRepoExtension::class.java, project)
+        val gitRepoExt = GitRepoExtension(ProjectGitRepoContext(project), project.repositories)
+        (project.repositories as ExtensionAware).extensions.add("gitRepo", gitRepoExt)
 
-        GroovyDslSupport.injectRepositoryMethods(project)
+        GroovyDslSupport.injectRepositoryMethods(project.repositories, gitRepoExt)
 
         project.afterEvaluate {
             if (project.hasPublishTask) {
                 val config = project.extensions.getByType(GitPublishConfig::class.java)
-                val gitRepoExt = (project.repositories as ExtensionAware).extensions.getByType(GitRepoExtension::class.java)
 
                 val cloneRepo = project.tasks.create("cloneRepo")
                 cloneRepo.doFirst {
