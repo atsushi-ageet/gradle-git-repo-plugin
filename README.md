@@ -100,7 +100,7 @@ dependencyResolutionManagement {
 
 ### Publishing to github repos
 
-Apply `com.ageet.git-repo-publish` instead of `com.ageet.git-repo`. It automatically applies `com.ageet.git-repo` and adds `cloneRepo` and `publishToGithub` tasks.
+Apply `com.ageet.git-repo-publish` instead of `com.ageet.git-repo`. It automatically applies `com.ageet.git-repo` and checks out a local branch in the publishing repository so you can commit and push after publishing.
 
 ```kotlin
 plugins {
@@ -108,19 +108,12 @@ plugins {
     `maven-publish`
 }
 
-gitPublishConfig {
-    org = "myorg"
-    repo = "maven-private"
-}
-
 publishing {
     publications {
         // ...
     }
     repositories {
-        maven {
-            url = uri("file://${gitPublishConfig.home}/${gitPublishConfig.org}/${gitPublishConfig.repo}/releases")
-        }
+        github("myorg", "maven-private")
     }
 }
 ```
@@ -128,7 +121,7 @@ publishing {
 Then run:
 
 ```
-./gradlew publishToGithub
+./gradlew publish
 ```
 
 ## Settings
@@ -138,23 +131,6 @@ The following gradle properties affect cloning dependencies
 - **offline** when defined, no network operations will be performed, the repos will be assumed to be in place
 - **gitRepoHome** the base directory for cloning git repos, ~/.gitRepos by default
 
-
-For publishing, the following configuration is supported, to allow non-github repos and other settings
-
-    gitPublishConfig {
-		// mandatory
-
-        org = "myorg"
-		repo = "myrepo"
-
-		// optional
-
-	    gitUrl = "" //used to replace git@${provider}:${org}/${repo}.git
-		provider = "github.com" // or "gitlab.com", or any other github like
-		branch = "master"
-        publishAndPushTask = "publishToGithub" // the name for the full publish action
-        publishTask = "publish" //default publish tasks added by maven-publish plugin
-	}
 
 ## Futures
 
