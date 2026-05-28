@@ -28,7 +28,13 @@ back and relax.
 
 ## Setup
 
-Add JitPack to `pluginManagement` in `settings.gradle.kts`:
+### Gradle Plugin Portal
+
+No additional setup required. Plugins are resolved automatically by their ID.
+
+### JitPack
+
+Add the following to `settings.gradle.kts`:
 
 ```kotlin
 pluginManagement {
@@ -80,12 +86,6 @@ repositories {
 Using `dependencyResolutionManagement` makes repositories available to all subprojects. Apply the plugin in `settings.gradle.kts`:
 
 ```kotlin
-pluginManagement {
-    repositories {
-        maven { url = uri("https://jitpack.io") }
-    }
-}
-
 plugins {
     id("com.ageet.git-repo-settings") version "3.0.0"
 }
