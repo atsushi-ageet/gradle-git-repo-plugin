@@ -7,12 +7,13 @@ import org.gradle.api.plugins.ExtensionAware
 class GitRepoPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
-        var cleanLocalRepoCache = project.rootProject.tasks.findByName("cleanLocalRepoCache")
-        if (cleanLocalRepoCache == null) {
-            cleanLocalRepoCache = project.rootProject.tasks.register("cleanLocalRepoCache")
-                .also { it.configure { t -> t.doFirst { localReposCache.clear() } } }.get()
-            project.rootProject.afterEvaluate {
-                project.rootProject.tasks.maybeCreate("clean").dependsOn(cleanLocalRepoCache)
+        if (project.rootProject.tasks.findByName("cleanLocalRepoCache") == null) {
+            project.rootProject.tasks.register("cleanLocalRepoCache") { t ->
+                t.doFirst { localReposCache.clear() }
+            }.also { provider ->
+                project.rootProject.pluginManager.withPlugin("base") {
+                    project.rootProject.tasks.named("clean").configure { it.dependsOn(provider) }
+                }
             }
         }
 
