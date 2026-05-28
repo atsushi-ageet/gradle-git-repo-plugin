@@ -8,7 +8,7 @@ plugins {
     kotlin("jvm") version "2.3.21"
 }
 
-group = "com.layer"
+group = "com.ageet"
 apply(from = "$rootDir/version.gradle.kts")
 
 repositories {
@@ -33,15 +33,15 @@ tasks.named<KotlinCompile>("compileKotlin") {
 gradlePlugin {
     plugins {
         create("gitRepo") {
-            id = "git-repo"
+            id = "com.ageet.git-repo"
             implementationClass = "com.layer.gradle.gitrepo.GitRepoPlugin"
         }
         create("gitRepoSettings") {
-            id = "git-repo-settings"
+            id = "com.ageet.git-repo-settings"
             implementationClass = "com.layer.gradle.gitrepo.GitRepoSettingsPlugin"
         }
         create("gitRepoPublish") {
-            id = "git-repo-publish"
+            id = "com.ageet.git-repo-publish"
             implementationClass = "com.layer.gradle.gitrepo.GitRepoPublishPlugin"
         }
     }
