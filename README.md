@@ -2,6 +2,8 @@
 
 # The Gradle Git Repo Plugin
 
+> This is a fork of the original gradle-git-repo-plugin by Layer.
+
 This plugin allows you to add a git repository as a maven repo, even if the git
 repository is private, similar to how CocoaPods works.
 
@@ -16,104 +18,125 @@ seamlessly. This is most useful if you've already set up to manage distribution
 this way. Deliver CocoaPods and Maven artifacts with the same system, then sit
 back and relax.
 
-## Building
+## Plugins
 
-Run `gradle build` to build, and `gradle publish` to publish. Sadly, this plugin no longer
-uses itself to publish itself :(.
+| Plugin ID | Use case |
+|---|---|
+| `com.ageet.git-repo` | Add git-hosted Maven repos in a project-level `repositories` block |
+| `com.ageet.git-repo-settings` | Add git-hosted Maven repos via `dependencyResolutionManagement` (settings-level) |
+| `com.ageet.git-repo-publish` | Publish and push artifacts to a git-hosted Maven repo |
+
+## Setup
+
+Add JitPack to `pluginManagement` in `settings.gradle.kts`:
+
+```kotlin
+pluginManagement {
+    repositories {
+        maven { url = uri("https://jitpack.io") }
+    }
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.id.startsWith("com.ageet.git-repo")) {
+                useModule("com.github.atsushi-ageet:gradle-git-repo-plugin:${requested.version}")
+            }
+        }
+    }
+}
+```
 
 ## Usage
 
-This plugin needs to be added via the standard plugin mechanism with this buildscript in your top level project
+### Depending on git repos — project level
 
-    buildscript {
-        repositories {
-            maven { url 'https://jitpack.io' }
-        }
-        dependencies {
-            classpath 'com.github.atsushi-ageet:gradle-git-repo-plugin:2.0.4'
-        }
-    }
+Apply the plugin in `build.gradle.kts`:
 
-and then apply the plugin
+```kotlin
+plugins {
+    id("com.ageet.git-repo") version "3.0.0"
+}
 
-    apply plugin: 'git-repo'
+repositories {
+    github("myorg", "maven-private")
+    bitbucket("myorg", "maven-private")
+    git("git@github.com:myorg/maven-private.git", "maven-private")
+}
+```
 
+`build.gradle` (Groovy DSL):
 
-### Depending on git repos
+```groovy
+plugins {
+    id 'com.ageet.git-repo' version '3.0.0'
+}
 
-This plug adds `github` and `git` methods to your repositories block
+repositories {
+    github 'myorg', 'maven-private'
+}
+```
 
+### Depending on git repos — settings level
+
+Using `dependencyResolutionManagement` makes repositories available to all subprojects. Apply the plugin in `settings.gradle.kts`:
+
+```kotlin
+pluginManagement {
     repositories {
-        github("layerhq", "maven-private", "master", "releases")
-        git("https://some/clone/url.git", "arbitrary.unique.name", "master", "releases")
+        maven { url = uri("https://jitpack.io") }
     }
+}
 
-Add either alongside other repositories and you're good to go. The `github` variant is
-just a special case of `git`, they both do the same thing.
+plugins {
+    id("com.ageet.git-repo-settings") version "3.0.0"
+}
+
+dependencyResolutionManagement {
+    repositories {
+        github("myorg", "maven-private")
+        mavenCentral()
+    }
+}
+```
 
 ### Publishing to github repos
 
-Publishing is a bit less seamless, mostly because there isn't one single way to
-handle publishing in gradle (also the maven-publish plugin is infuratingly
-tamper-proof). You're expected to have a task called `publish` by default, that
-publishes to the locally cloned repo. That task gets wrapped into a
-`publishToGithub` task that handles committing and pushing the change. First, add this
-configuration block, which will use github by default:
+Apply `com.ageet.git-repo-publish` instead of `com.ageet.git-repo`. It automatically applies `com.ageet.git-repo` and adds `cloneRepo` and `publishToGithub` tasks.
 
-    gitPublishConfig{
-        org = "layerhq"
-        repo = "maven-private"
+```kotlin
+plugins {
+    id("com.ageet.git-repo-publish") version "3.0.0"
+    `maven-publish`
+}
+
+gitPublishConfig {
+    org = "myorg"
+    repo = "maven-private"
+}
+
+publishing {
+    publications {
+        // ...
     }
-
-The `maven-publish` plugin defines a publish task for you, so you just need to
-supply the right url in the publishing block
-
-    publishing {
-        publications {
-            //...
-        }
-        repositories {
-            maven {
-                url "file://${gitPublishConfig.home}/${gitPublishConfig.org}/${gitPublishConfig.repo}/releases"
-            }
+    repositories {
+        maven {
+            url = uri("file://${gitPublishConfig.home}/${gitPublishConfig.org}/${gitPublishConfig.repo}/releases")
         }
     }
+}
+```
 
-Then you can run
+Then run:
 
-    gradle publishToGithub
-
-You can also run 
-
-    gradle publish
-
-to stage a release in the local github repo and commit it manually.
-
-
-A version of this with the `maven` plugin might look like
-
-    String url() {
-        String org =  gitPublishConfig.org
-        String repo = gitPublishConfig.repo
-        String repoHome = gitPublishConfig.home
-        return "file://$repoHome/$org/$repo/releases"
-    }
-    
-    task publishJar(type: Upload, description: "Upload android Jar library") {
-        configuration = configurations.sdkJar
-        repositories {
-            mavenDeployer {
-                repository(url: url())
-            }
-        }
-    }
+```
+./gradlew publishToGithub
+```
 
 ## Settings
 
 The following gradle properties affect cloning dependencies
 
 - **offline** when defined, no network operations will be performed, the repos will be assumed to be in place
-- **home** the base directory for cloning git repos, ~/.gitRepos by default
+- **gitRepoHome** the base directory for cloning git repos, ~/.gitRepos by default
 
 
 For publishing, the following configuration is supported, to allow non-github repos and other settings
