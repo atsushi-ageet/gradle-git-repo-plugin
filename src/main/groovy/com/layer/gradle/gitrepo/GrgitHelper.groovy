@@ -33,13 +33,14 @@ final class GrgitHelper {
 
         if (createLocalBranch) {
             if (repository.findRef("refs/heads/${branch}") != null) {
-                jgit.checkout().setName(branch).call()
+                jgit.checkout().setName(branch).setForced(true).call()
                 jgit.reset().setMode(ResetCommand.ResetType.HARD).setRef(remoteCommit.name).call()
             } else {
-                jgit.checkout().setCreateBranch(true).setName(branch).setStartPoint(remoteCommit.name).call()
+                jgit.checkout().setCreateBranch(true).setName(branch).setStartPoint(remoteCommit.name).setForced(true).call()
             }
         } else {
-            jgit.checkout().setName(remoteCommit.name).call()
+            jgit.checkout().setName(remoteCommit.name).setForced(true).call()
+            jgit.reset().setMode(ResetCommand.ResetType.HARD).setRef(remoteCommit.name).call()
         }
     }
 }
